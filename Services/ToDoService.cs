@@ -87,6 +87,8 @@ public class ToDoService : ToDoIt.ToDoItBase {
     toDoItem.Description = request.Description;
     toDoItem.ToDoStatus = request.ToDoStatus;
 
+    _dbContext.Update(toDoItem);
+
     await _dbContext.SaveChangesAsync();
 
     return await Task.FromResult(new UpdateToDoResponse{
