@@ -37,7 +37,7 @@ public class ToDoService : ToDoIt.ToDoItBase {
   public override async Task<ReadToDoResponse> ReadToDo(ReadToDoRequest request, ServerCallContext context)
   {
     if (request.Id <= 0)
-      throw new RpcException(new Status(StatusCode.InvalidArgument, "resource index must be greater than 0"));
+      throw new RpcException(new Status(StatusCode.InvalidArgument, "Resource index must be greater than 0"));
 
 
     var toDoItem = await _dbContext.ToDoItems.FirstOrDefaultAsync(t => t.Id == request.Id);
@@ -71,5 +71,26 @@ public class ToDoService : ToDoIt.ToDoItBase {
     }
 
     return await Task.FromResult(response);
+  }
+
+  public override async Task<UpdateToDoResponse> UpdateToDo(UpdateToDoRequest request, ServerCallContext context)
+  {
+    if (request.Id <= 0 || request.Title == string.Empty || request.Description == string.Empty)
+      throw new RpcException(new Status(StatusCode.InvalidArgument, "You must supply a valid object"));
+
+    var toDoItem = await _dbContext.ToDoItems.FirstOrDefaultAsync(t=>t.Id == request.Id);
+
+    if (toDoItem == null)
+      throw new RpcException(new Status(StatusCode.NotFound, $"No Task with Id {request.Id}"));
+
+    toDoItem.Title = request.Title;
+    toDoItem.Description = request.Description;
+    toDoItem.ToDoStatus = request.ToDoStatus;
+
+    await _dbContext.SaveChangesAsync();
+
+    return await Task.FromResult(new UpdateToDoResponse{
+      Id = toDoItem.Id
+    });
   }
 }
